@@ -1,0 +1,17 @@
+# Rust build output
+target
+
+# Node modules and build outputs
+pixelify_web/node_modules
+pixelify_web/dist
+
+# Logs
+npm-debug.log
+yarn-error.log
+
+# Ignore Git repo internals *inside the Docker image*
+.git
+
+# OS junk
+.DS_Store
+Thumbs.db
