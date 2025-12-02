@@ -1,6 +1,6 @@
 # Pixelify  
 
-** In Development **
+**In Development**
 
 This README is both a traditional README and a road map of planned or features in progress/
 
@@ -22,14 +22,21 @@ Designed to be fast, portable, and game-dev-friendly.
 
 ## Project Structure
 
-pixelify/
-├── pixelify_core/      # Pure Rust image/pixel logic
-├── pixelify_cli/       # Rust CLI for local usage
-├── pixelify_wasm/      # WASM bindings for the browser
-├── pixelify_web/       # React + TypeScript frontend (Vite)
-├── Dockerfile          # Dev container
-├── docker-compose.yml
-└── Cargo.toml          # Workspace config
+    pixelify/
+
+        pixelify_core/ # Pure Rust image/pixel logic
+
+        pixelify_cli/ # Rust CLI for local usage
+
+        pixelify_wasm/ # WASM bindings for the browser
+
+        pixelify_web/ # React + TypeScript frontend (Vite)
+
+        Dockerfile # Dev container
+
+        docker-compose.yml
+
+        Cargo.toml # Workspace config
 
 ## Running in Docker (I Recommend this way since there are a lot of moving parts)
 
@@ -51,7 +58,7 @@ docker compose exec dev bash
 
 ---
 
-## Local Dev + WASM + CLI**
+## Local Dev + WASM + CLI
 
 ## Local Development (non-Docker)
 
@@ -73,7 +80,7 @@ cargo run -p pixelify_cli -- input.png output.png --width 32 --height 32
 
 ---
 
-## Tech Stack + Roadmap**
+## Tech Stack + Roadmap
 
 ## Tech Stack
 
@@ -94,15 +101,15 @@ cargo run -p pixelify_cli -- input.png output.png --width 32 --height 32
 
 ---
 
-## 📝 Roadmap
+## Roadmap
 
-- [ ] Add NES, GB, Pico-8 palettes  
-- [ ] Add dithering options  
-- [ ] Add sprite sheet generator  
-- [ ] Add tilemap mode  
-- [ ] Add downloadable metadata  
-- [ ] Add animation previewer  
+- [ ] Add NES, GB, Pico-8 palettes
+- [ ] Add dithering options
+- [ ] Add sprite sheet generator
+- [ ] Add tilemap mode
+- [ ] Add downloadable metadata
+- [ ] Add animation previewer
 - [ ] Deploy to Vercel / Netlify
 
-This is in the early stages of development, so as I proceed through this project items listed above are subject to modification, addition, or removal based on how I see fit.
-If you have any cool ideas or features you'd like to see accessible/avalible then let me know!
+This is in the early stages of development, so as I proceed through this project, items listed above are subject to modification, addition, or removal based on how I see fit.
+If you have any cool ideas or features you'd like to see accessible/ available, then let me know!
