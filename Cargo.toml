@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "pixelify_core",
+    "pixelify_cli",
+    "pixelify_wasm",
+]
+resolver = "2"
