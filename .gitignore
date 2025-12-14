@@ -48,8 +48,8 @@ Desktop.ini
 **/Cargo.toml.backup
 
 # If you store test input / output samples:
-inputs/
-outputs/
+inputs/*
+outputs/*
 
 # If you generate compiled binaries manually
 **/*.out
