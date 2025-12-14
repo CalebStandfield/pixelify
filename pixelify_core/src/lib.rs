@@ -1,14 +1,27 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+
+
+pub struct PixelifyOptions {
+    pub width: u8,
+    pub height: u8
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub struct PixelifyImage {
+    pub pixels: Vec<u8>,
+    pub options: PixelifyOptions,
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl PixelifyImage {
+    pub fn new(bytes: Vec<u8>, height: u8, width: u8) -> PixelifyImage {
+        Self {
+            pixels: bytes,
+            options: PixelifyOptions {
+                width,
+                height,
+            }
+        }
     }
+}
+
+pub fn pixelify_png(bytes: Vec<u8>, height: u8, width: u8) -> PixelifyImage {
+    PixelifyImage::new(bytes, height, width)
 }
