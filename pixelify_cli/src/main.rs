@@ -1,26 +1,30 @@
 use clap::{Parser, Subcommand};
-use std::fs;
-use pixelify_core::pixelify_image;
-use pixelify_core::grayscale::grayscale_png;
 use pixelify_core::crop::crop_png;
-
+use pixelify_core::grayscale::grayscale_png;
+use pixelify_core::pixelify_image;
+use std::path::Path;
+use std::{fs, io};
 
 fn main() {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Command::Pixelify { input, output, width, height } => {
+        Command::Pixelify {
+            input,
+            output,
+            width,
+            height,
+        } => {
             let bytes = fs::read(&input).expect("failed to read input");
-            let out_png = pixelify_image::PixelifyImage::new(
-                bytes,
-                width,
-                height,
-            );
+            let out_png = pixelify_image::PixelifyImage::new(bytes, width, height);
             fs::write(&output, out_png.as_bytes()).expect("failed to write output");
         }
 
-        Command::Delete => {
-            clear_outputs();
+        Command::ClearOutputs => {
+            if let Err(e) = clear_outputs() {
+                eprintln!("{e}");
+                std::process::exit(1);
+            }
         }
 
         // Command::Grayscale { input, output } => {
@@ -70,23 +74,44 @@ enum Command {
         #[arg(long)]
         h: u32,
     },
-    Delete,
-
+    #[command(visible_alias = "clear_outputs", visible_alias = "clearoutputs", alias = "clear")]
+    ClearOutputs,
 }
 
+/// Clears the `outputs/` directory's contents.
+///
+/// This function expects the `outputs/` directory to contain only files produced by this program.
+/// Thus, no subdirectories.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - `outputs/` is not a directory or is missing, returns `ErrorKind::NotFound`,
+/// - a subdirectory is found inside `outputs/`, returns `ErrorKind::InvalidData`,
+/// - any file could not be removed.
+fn clear_outputs() -> io::Result<()> {
+    let dir = Path::new("outputs");
 
-fn clear_outputs() {
-    let path = "outputs";
-
-    for entry in fs::read_dir(path).expect("Path is hardcoded. If it fails the outputs directory is not in its intended directory") {
-        let entry = match entry {
-            Ok(entry) => entry,
-            Err(_) => {eprintln!("Error occurred when taking {:?}, out of its option", entry); continue}
-        };
-        let path = entry.path();
-        match fs::remove_file(path) {
-            Ok(_) => {}
-            Err(_) => {eprintln!("File could not be removed, either it doesn't exist, or invalid permissions"); continue}
-        }
+    // Outputs should exist
+    if !dir.is_dir() {
+        return Err(io::Error::new(io::ErrorKind::NotFound, "outputs/ missing"));
     }
+
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        // Outputs should consist of only image files outputted by this program
+        // If any directories exist, that is not the intended behavior
+        if entry.file_type()?.is_dir() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("unexpected directory inside outputs/: {:?}", path),
+            ));
+        }
+
+        fs::remove_file(&path)
+            .map_err(|e| io::Error::new(e.kind(), format!("failed to delete {:?}: {}", path, e)))?;
+    }
+    Ok(())
 }
