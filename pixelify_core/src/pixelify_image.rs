@@ -23,7 +23,3 @@ impl PixelifyImage {
         &self.pixels
     }
 }
-
-pub fn pixelify_png(bytes: Vec<u8>, width: u32,  height: u32) -> PixelifyImage {
-    PixelifyImage::new(bytes, width, height)
-}
