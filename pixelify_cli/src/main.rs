@@ -76,6 +76,10 @@ enum Command {
 
 fn clear_outputs() {
     let path = "outputs";
-    fs::remove_file(path).expect("failed to delete outputs");
-    fs::create_dir(path).expect("failed to create outputs");
+
+    for entry in fs::read_dir(path).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        fs::remove_file(path).unwrap();
+    }
 }
