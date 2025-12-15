@@ -1,22 +1,69 @@
-use std::env::args;
+use clap::{Parser, Subcommand};
 use std::fs;
+use pixelify_core::pixelify_image;
+use pixelify_core::grayscale::grayscale_png;
+use pixelify_core::crop::crop_png;
+
 
 fn main() {
-    let args: Vec<String> = args().collect();
-    if args.len() != 5 {
-        eprintln!("usage: pixelify_cli <input> <output.png> <width> <height>");
-        std::process::exit(1);
+    let cli = Cli::parse();
+
+    match cli.cmd {
+        Command::Pixelify { input, output, width, height } => {
+            let bytes = fs::read(&input).expect("failed to read input");
+            let out_png = pixelify_image::pixelify_png(
+                bytes,
+                width,
+                height,
+            );
+            fs::write(&output, out_png.as_bytes()).expect("failed to write output");
+        }
+
+        // Command::Grayscale { input, output } => {
+        //     let bytes = fs::read(&input).expect("failed to read input");
+        //     let out_png = grayscale_png(bytes);
+        //     fs::write(&output, out_png).expect("failed to write output");
+        // }
+        // 
+        // Command::Crop { input, output, x, y, w, h } => {
+        //     let bytes = fs::read(&input).expect("failed to read input");
+        //     let out_png = crop_png(&bytes, x, y, w, h);
+        //     fs::write(&output, out_png).expect("failed to write output");
+        _ => {}
     }
+}
 
-    let input_path = &args[1];
-    let output_path = &args[2];
-    let width: u8 = args[3].parse().expect("width must be a number");
-    let height: u8 = args[4].parse().expect("height must be a number");
+#[derive(Parser)]
+#[command(author, version, about)]
+struct Cli {
+    #[command(subcommand)]
+    cmd: Command,
+}
 
-    let input_bytes = fs::read(input_path).expect("failed to read input file");
-
-    let out = pixelify_core::pixelify_png(input_bytes, width, height);
-
-    fs::write(output_path, out.pixels).expect("failed to write output file");
-    println!("wrote {}", output_path);
+#[derive(Subcommand)]
+enum Command {
+    Pixelify {
+        input: String,
+        output: String,
+        #[arg(long)]
+        width: u32,
+        #[arg(long)]
+        height: u32,
+    },
+    Grayscale {
+        input: String,
+        output: String,
+    },
+    Crop {
+        input: String,
+        output: String,
+        #[arg(long)]
+        x: u32,
+        #[arg(long)]
+        y: u32,
+        #[arg(long)]
+        w: u32,
+        #[arg(long)]
+        h: u32,
+    },
 }
