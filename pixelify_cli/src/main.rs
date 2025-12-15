@@ -74,12 +74,19 @@ enum Command {
 
 }
 
+
 fn clear_outputs() {
     let path = "outputs";
 
-    for entry in fs::read_dir(path).unwrap() {
-        let entry = entry.unwrap();
+    for entry in fs::read_dir(path).expect("Path is hardcoded. If it fails the outputs directory is not in its intended directory") {
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(_) => {eprintln!("Error occurred when taking {:?}, out of its option", entry); continue}
+        };
         let path = entry.path();
-        fs::remove_file(path).unwrap();
+        match fs::remove_file(path) {
+            Ok(_) => {}
+            Err(_) => {eprintln!("File could not be removed, either it doesn't exist, or invalid permissions"); continue}
+        }
     }
 }
