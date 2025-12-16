@@ -1,5 +1,16 @@
 use crate::pixelify_errors::ImageProcessingError;
 
+/// Converts image into a grayscale format.
+///
+/// Take in image bytes, loads them into memory, then transforms it into a luma8 image.
+/// Writes those into a resultant vector.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - loading the bytes from memory fails,
+/// - writing the bytes into the output fails.
+/// Both failures result in an `ImageProcessingError` with a relevant message.
 pub fn grayscale_png(bytes: &[u8]) -> Result<Vec<u8>, ImageProcessingError> {
     let image = image::load_from_memory(bytes)
         .map_err(|_| ImageProcessingError::failed("grayscale", "Failed to decode input image"))?;
