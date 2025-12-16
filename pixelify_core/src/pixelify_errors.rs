@@ -13,7 +13,10 @@ pub struct ImageProcessingError {
 
 impl ImageProcessingError {
     pub fn failed(op: &'static str, message: impl Into<String>) -> Self {
-        Self { op, message: message.into() }
+        Self {
+            op,
+            message: message.into(),
+        }
     }
 }
 
