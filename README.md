@@ -9,6 +9,15 @@ Convert normal images into crisp pixel-art sprites using Rust + WASM + React.
 Pixelify takes any uploaded image, processes it through a Rust backend compiled to WebAssembly, and outputs a pixelated sprite with customizable resolution, palette, and dithering options.
 Designed to be fast, portable, and game-dev-friendly.
 
+### Format Support Note
+
+When creating a simple grayscale feature I ran into upstream bugs with decoding a jpg image into bytes then into a grayscale format and writing those back.
+The crate `Image` (while really powerful and amazing) has some limitations with decoding from one type then re-encoding to another type.
+
+So for now I will offer full support for PNG image types and then a working "best effort" for other types. 
+
+Later I hope to revisit this issue and or side step it by just converting non png types into png types on the backend and go from there.
+
 ## Features
 
 - Convert any image into pixel art
