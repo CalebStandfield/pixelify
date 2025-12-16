@@ -27,12 +27,12 @@ fn main() {
             }
         }
 
-        // Command::Grayscale { input, output } => {
-        //     let bytes = fs::read(&input).expect("failed to read input");
-        //     let out_png = grayscale_png(bytes);
-        //     fs::write(&output, out_png).expect("failed to write output");
-        // }
-        //
+        Command::Grayscale { input, output } => {
+            let bytes = fs::read(&input).expect("failed to read input");
+            let out_png = grayscale_png(&bytes).expect("failed to encode PNG");
+            fs::write(&output, out_png).expect("failed to write output");
+        }
+
         // Command::Crop { input, output, x, y, w, h } => {
         //     let bytes = fs::read(&input).expect("failed to read input");
         //     let out_png = crop_png(&bytes, x, y, w, h);
@@ -74,7 +74,11 @@ enum Command {
         #[arg(long)]
         h: u32,
     },
-    #[command(visible_alias = "clear_outputs", visible_alias = "clearoutputs", alias = "clear")]
+    #[command(
+        visible_alias = "clear_outputs",
+        visible_alias = "clearoutputs",
+        alias = "clear"
+    )]
     ClearOutputs,
 }
 

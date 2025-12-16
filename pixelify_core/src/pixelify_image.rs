@@ -1,6 +1,18 @@
+use image::{DynamicImage, GenericImageView};
+
 pub struct PixelifyOptions {
     width: u32,
     height: u32,
+}
+
+pub struct ImageBytes {
+    pub bytes: Vec<u8>,
+}
+
+impl ImageBytes {
+    pub fn new(bytes: Vec<u8>) -> ImageBytes {
+        ImageBytes { bytes }
+    }
 }
 
 pub struct PixelifyImage {
@@ -9,13 +21,10 @@ pub struct PixelifyImage {
 }
 
 impl PixelifyImage {
-    pub fn new(bytes: Vec<u8>,width: u32,  height: u32) -> PixelifyImage {
+    pub fn new(bytes: Vec<u8>, width: u32, height: u32) -> PixelifyImage {
         Self {
             pixels: bytes,
-            options: PixelifyOptions {
-                width,
-                height,
-            }
+            options: PixelifyOptions { width, height },
         }
     }
 
