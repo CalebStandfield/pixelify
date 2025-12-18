@@ -1,3 +1,7 @@
+//! Main file and execution point for Pixelify.
+//! Pixelify is a Rust + WebAssembly or CLI tool that converts normal images into pixel-art sprites.
+//! As well as having some more basic editing features like a crop or grayscale functionality, for example.
+
 use clap::{Parser, Subcommand};
 use pixelify_core::crop::crop_png;
 use pixelify_core::grayscale::grayscale_png;
@@ -15,6 +19,8 @@ fn main() {
             width,
             height,
         } => {
+            // This does not pixelify an image as of now.
+            // Just a simple copy function until pixelify is implemented.
             let bytes = fs::read(&input).expect("failed to read input");
             let out_png = pixelify_image::PixelifyImage::new(bytes, width, height);
             fs::write(&output, out_png.as_bytes()).expect("failed to write output");
@@ -33,11 +39,18 @@ fn main() {
             fs::write(&output, out_png).expect("failed to write output");
         }
 
-        // Command::Crop { input, output, x, y, w, h } => {
-        //     let bytes = fs::read(&input).expect("failed to read input");
-        //     let out_png = crop_png(&bytes, x, y, w, h);
-        //     fs::write(&output, out_png).expect("failed to write output");
-        _ => {}
+        Command::Crop {
+            input,
+            output,
+            x,
+            y,
+            w,
+            h,
+        } => {
+            let bytes = fs::read(&input).expect("failed to read input");
+            let out_png = crop_png(&bytes, x, y, w, h).expect("failed to crop");
+            fs::write(&output, out_png).expect("failed to write output");
+        }
     }
 }
 
@@ -90,9 +103,8 @@ enum Command {
 /// # Errors
 ///
 /// Returns an error if:
-/// - `outputs/` is not a directory or is missing, returns `ErrorKind::NotFound`,
-/// - a subdirectory is found inside `outputs/`, returns `ErrorKind::InvalidData`,
-/// - any file could not be removed.
+/// - `outputs/` is not a directory or missing, returns `ErrorKind::NotFound`,
+/// - a subdirectory is found inside `outputs/`, returns `ErrorKind::InvalidData`.
 fn clear_outputs() -> io::Result<()> {
     let dir = Path::new("outputs");
 
