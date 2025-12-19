@@ -1,7 +1,7 @@
 //! Utility file for pixelify_cli
 
-use std::{fs, io};
 use std::path::Path;
+use std::{fs, io};
 
 /// Clears the `outputs/` directory's contents.
 ///
@@ -38,4 +38,33 @@ pub fn clear_outputs() -> io::Result<()> {
             .map_err(|e| io::Error::new(e.kind(), format!("failed to delete {:?}: {}", path, e)))?;
     }
     Ok(())
+}
+
+/// Runs an image-processing operation on an input file and writes the result to an output file.
+///
+/// This helper reads the entire input file into memory, applies the provided operation
+/// to the file bytes, and writes the resulting PNG bytes to the output path.
+///
+/// The operation is provided as a function or closure that takes the input bytes
+/// and returns either encoded PNG bytes or an error.
+///
+/// # Errors
+///
+/// - Exits the process with a non-zero status if the input file cannot be read
+/// - Exits the process if the operation returns an error
+/// - Panics if the output file cannot be written
+pub fn run_op<F, E>(input: &str, output: &str, op: F)
+where
+    F: FnOnce(&[u8]) -> Result<Vec<u8>, E>,
+    E: std::fmt::Display,
+{
+    let bytes = fs::read(input).expect("failed to read input");
+    let out_png = match op(&bytes) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("operation failed: {e}");
+            std::process::exit(1);
+        }
+    };
+    fs::write(output, out_png).expect("failed to write output");
 }

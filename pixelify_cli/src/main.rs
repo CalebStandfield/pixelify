@@ -8,6 +8,7 @@ use pixelify_core::grayscale::grayscale_png;
 use pixelify_core::pixelify_image;
 use std::fs;
 mod cli_utils;
+use cli_utils::*;
 
 fn main() {
     let cli = Cli::parse();
@@ -27,16 +28,14 @@ fn main() {
         }
 
         Command::ClearOutputs => {
-            if let Err(e) = cli_utils::clear_outputs() {
+            if let Err(e) = clear_outputs() {
                 eprintln!("{e}");
                 std::process::exit(1);
             }
         }
 
         Command::Grayscale { input, output } => {
-            let bytes = fs::read(&input).expect("failed to read input");
-            let out_png = grayscale_png(&bytes).expect("failed to encode PNG");
-            fs::write(&output, out_png).expect("failed to write output");
+            run_op(&input, &output, |b| grayscale_png(b));
         }
 
         Command::Crop {
@@ -47,9 +46,7 @@ fn main() {
             w,
             h,
         } => {
-            let bytes = fs::read(&input).expect("failed to read input");
-            let out_png = crop_png(&bytes, x, y, w, h).expect("failed to crop");
-            fs::write(&output, out_png).expect("failed to write output");
+            run_op(&input, &output, |b| crop_png(b, x, y, w, h));
         }
     }
 }
