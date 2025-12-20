@@ -4,7 +4,7 @@ use image::GenericImageView;
 /// Crops a rectangular portion of an image.
 ///
 /// The crop rectangle is defined by its top-left corner (`x`, `y`)
-/// and its width (`w`) and height (`h`), all in pixels.
+/// and its width (`width`) and height (`height`), all in pixels.
 ///
 /// If the requested crop size x + w and y + h are outside the bounds of the image,
 /// then the values will be clamped to fit within the image.
@@ -21,8 +21,8 @@ pub fn crop_png(
     bytes: &[u8],
     x: u32,
     y: u32,
-    w: u32,
-    h: u32,
+    width: u32,
+    height: u32,
 ) -> Result<Vec<u8>, ImageProcessingError> {
     let image = image::load_from_memory(bytes)
         .map_err(|_| ImageProcessingError::failed("crop", "Failed to decode input image"))?;
@@ -39,14 +39,14 @@ pub fn crop_png(
     let max_w = img_w - x;
     let max_h = img_h - y;
 
-    let w = w.min(max_w);
-    let h = h.min(max_h);
+    let width = width.min(max_w);
+    let height = height.min(max_h);
 
-    if w == 0 || h == 0 {
+    if width == 0 || height == 0 {
         return Err(ImageProcessingError::failed("crop", "Crop size is zero"));
     }
 
-    let cropped = image.crop_imm(x, y, w, h);
+    let cropped = image.crop_imm(x, y, width, height);
 
     let mut cursor = std::io::Cursor::new(Vec::new());
     cropped
