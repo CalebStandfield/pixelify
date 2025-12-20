@@ -6,8 +6,9 @@ use clap::{Parser, Subcommand};
 use pixelify_core::crop::crop_png;
 use pixelify_core::grayscale::grayscale_png;
 use pixelify_core::pixelify_image;
-use std::path::Path;
-use std::{fs, io};
+use std::fs;
+mod cli_utils;
+use cli_utils::*;
 
 fn main() {
     let cli = Cli::parse();
@@ -34,9 +35,7 @@ fn main() {
         }
 
         Command::Grayscale { input, output } => {
-            let bytes = fs::read(&input).expect("failed to read input");
-            let out_png = grayscale_png(&bytes).expect("failed to encode PNG");
-            fs::write(&output, out_png).expect("failed to write output");
+            run_op(&input, &output, |b| grayscale_png(b));
         }
 
         Command::Crop {
@@ -47,9 +46,7 @@ fn main() {
             w,
             h,
         } => {
-            let bytes = fs::read(&input).expect("failed to read input");
-            let out_png = crop_png(&bytes, x, y, w, h).expect("failed to crop");
-            fs::write(&output, out_png).expect("failed to write output");
+            run_op(&input, &output, |b| crop_png(b, x, y, w, h));
         }
     }
 }
@@ -93,41 +90,4 @@ enum Command {
         alias = "clear"
     )]
     ClearOutputs,
-}
-
-/// Clears the `outputs/` directory's contents.
-///
-/// This function expects the `outputs/` directory to contain only files produced by this program.
-/// Thus, no subdirectories.
-///
-/// # Errors
-///
-/// Returns an error if:
-/// - `outputs/` is not a directory or missing, returns `ErrorKind::NotFound`,
-/// - a subdirectory is found inside `outputs/`, returns `ErrorKind::InvalidData`.
-fn clear_outputs() -> io::Result<()> {
-    let dir = Path::new("outputs");
-
-    // Outputs should exist
-    if !dir.is_dir() {
-        return Err(io::Error::new(io::ErrorKind::NotFound, "outputs/ missing"));
-    }
-
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        // Outputs should consist of only image files outputted by this program
-        // If any directories exist, that is not the intended behavior
-        if entry.file_type()?.is_dir() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("unexpected directory inside outputs/: {:?}", path),
-            ));
-        }
-
-        fs::remove_file(&path)
-            .map_err(|e| io::Error::new(e.kind(), format!("failed to delete {:?}: {}", path, e)))?;
-    }
-    Ok(())
 }

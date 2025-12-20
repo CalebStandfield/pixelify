@@ -1,5 +1,3 @@
-use image::{DynamicImage, GenericImageView};
-
 pub struct PixelifyOptions {
     width: u32,
     height: u32,
