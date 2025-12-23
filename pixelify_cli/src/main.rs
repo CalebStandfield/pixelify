@@ -13,7 +13,7 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Command::Pixelify {
+        Command::PixelifyDownscale {
             input,
             output,
             pixel_size,
@@ -22,7 +22,15 @@ fn main() {
             // Just a simple copy function until pixelify is implemented.
             run_op(&input, &output, |b| pixelify_downscale_by_pixel_size(b, pixel_size))
         }
-
+        Command::PixelifyFalseDownscale {
+            input,
+            output,
+            pixel_size,
+        } => {
+            // This does not pixelify an image as of now.
+            // Just a simple copy function until pixelify is implemented.
+            run_op(&input, &output, |b| pixelify_false_downscale_by_pixel_size(b, pixel_size))
+        }
         Command::ClearOutputs => {
             if let Err(e) = clear_outputs() {
                 eprintln!("{e}");
@@ -56,7 +64,13 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    Pixelify {
+    PixelifyDownscale {
+        input: String,
+        output: String,
+        #[arg(long)]
+        pixel_size: u32,
+    },
+    PixelifyFalseDownscale {
         input: String,
         output: String,
         #[arg(long)]

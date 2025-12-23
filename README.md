@@ -86,7 +86,7 @@ cargo build --target wasm32-unknown-unknown
 ## CLI Usage Examples
 
 
-cargo run -p pixelify_cli pixelify ./inputs/IMAGE_NAME.png ./outputs/IMAGE_NAME.png --pixel-size 8
+cargo run -p pixelify_cli pixelify-downscale ./inputs/IMAGE_NAME.png ./outputs/IMAGE_NAME.png --pixel-size 8
 
 ---
 
