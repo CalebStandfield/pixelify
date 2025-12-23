@@ -92,7 +92,7 @@ pub fn pixelify_false_downscale_by_pixel_size(
 
     let (width, height) = image.dimensions();
 
-    let mut false_downscaled = vec![0u8; (width * height * 4) as usize];
+    let mut false_downscaled = image.as_raw().to_vec();
 
     let blocks_x = width / pixel_size;
     let blocks_y = height / pixel_size;
