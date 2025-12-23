@@ -11,7 +11,7 @@ Designed to be fast, portable, and game-dev-friendly.
 
 ### Format Support Note
 
-When creating a simple grayscale feature I ran into upstream bugs with decoding a jpg image into bytes then into a grayscale format and writing those back.
+When creating a simple grayscale feature, I ran into upstream bugs with decoding a jpg image into bytes, then into a grayscale format, and writing those back.
 The crate `Image` (while really powerful and amazing) has some limitations with decoding from one type then re-encoding to another type.
 
 So for now I will offer full support for PNG image types and then a working "best effort" for other types. 
@@ -83,9 +83,10 @@ docker compose exec dev bash
 cd pixelify_wasm
 cargo build --target wasm32-unknown-unknown
 
-## CLI Usage
+## CLI Usage Examples
 
-cargo run -p pixelify_cli -- input.png output.png --width 32 --height 32
+
+cargo run -p pixelify_cli pixelify ./inputs/IMAGE_NAME.png ./outputs/IMAGE_NAME.png --pixel-size 8
 
 ---
 
