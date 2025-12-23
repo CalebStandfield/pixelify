@@ -5,8 +5,7 @@
 use clap::{Parser, Subcommand};
 use pixelify_core::crop::crop_png;
 use pixelify_core::grayscale::grayscale_png;
-use pixelify_core::pixelify_image;
-use std::fs;
+use pixelify_core::pixelify::*;
 mod cli_utils;
 use cli_utils::*;
 
@@ -17,14 +16,11 @@ fn main() {
         Command::Pixelify {
             input,
             output,
-            width,
-            height,
+            pixel_size,
         } => {
             // This does not pixelify an image as of now.
             // Just a simple copy function until pixelify is implemented.
-            let bytes = fs::read(&input).expect("failed to read input");
-            let out_png = pixelify_image::PixelifyImage::new(bytes, width, height);
-            fs::write(&output, out_png.as_bytes()).expect("failed to write output");
+            run_op(&input, &output, |b| pixelify_downscale_by_pixel_size(b, pixel_size))
         }
 
         Command::ClearOutputs => {
@@ -64,9 +60,7 @@ enum Command {
         input: String,
         output: String,
         #[arg(long)]
-        width: u32,
-        #[arg(long)]
-        height: u32,
+        pixel_size: u32,
     },
     Grayscale {
         input: String,

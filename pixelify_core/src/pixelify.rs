@@ -23,10 +23,6 @@ pub fn pixelify_downscale_by_pixel_size(
         ));
     }
 
-    // Clone bytes since we can't modify them
-    // Nor should we since this should be non-destructive
-    let bytes = bytes.to_vec();
-
     let image = image::load_from_memory(&bytes).map_err(|_| {
         ImageProcessingError::failed("pixelify_downscale_by_pixel_size", "Failed to decode PNG")
     })?;
@@ -40,6 +36,13 @@ pub fn pixelify_downscale_by_pixel_size(
 
     // New number of pixels by height with truncation
     let new_height = height / pixel_size;
+
+    if new_width == 0 || new_height == 0 {
+        return Err(ImageProcessingError::failed(
+            "pixelify_downscale_by_pixel_size",
+            "Pixel size is larger than the image dimensions",
+        ));
+    }
 
     let mut downscaled = vec![0u8; (new_width * new_height * 4) as usize];
 
@@ -59,8 +62,15 @@ pub fn pixelify_downscale_by_pixel_size(
         }
     }
 
+    let rgba = RgbaImage::from_raw(new_width, new_height, downscaled)
+        .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
 
-    Ok(downscaled)
+    let mut cursor = std::io::Cursor::new(Vec::new());
+
+    rgba.write_to(&mut cursor, image::ImageFormat::Png)
+        .map_err(|_| ImageProcessingError::failed("crop", "Failed to encode PNG"))?;
+
+    Ok(cursor.into_inner())
 }
 
 fn get_average_rgba(
