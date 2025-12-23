@@ -10,7 +10,7 @@
 //! Or they should be able to enter in their desired image size, ex, w = 128, h = 72, and then the backed determine pixel size from that.
 
 use crate::pixelify_errors::ImageProcessingError;
-use image::{GenericImageView, Pixel, RgbaImage};
+use image::RgbaImage;
 
 pub fn pixelify_downscale_by_pixel_size(
     bytes: &[u8],
@@ -41,12 +41,26 @@ pub fn pixelify_downscale_by_pixel_size(
     // New number of pixels by height with truncation
     let new_height = height / pixel_size;
 
-    // Create a new byte array of this size
-    let downscaled_image = Vec::with_capacity(new_width as usize * new_height as usize);
-
-    // For each pixel_size * pixel_size block in the original image calculate the average color
+    let mut downscaled = vec![0u8; (new_width * new_height * 4) as usize];
 
     // Take the average color and map that to the downscaled image
+    for by in 0..new_height {
+        for bx in 0..new_width {
+            let x = bx * pixel_size;
+            let y = by * pixel_size;
+
+            let (r, g, b, a) = get_average_rgba(&image, x, y, pixel_size)?;
+
+            let out_i = ((by * new_width + bx) * 4) as usize;
+            downscaled[out_i] = r;
+            downscaled[out_i + 1] = g;
+            downscaled[out_i + 2] = b;
+            downscaled[out_i + 3] = a;
+        }
+    }
+
+
+    Ok(downscaled)
 }
 
 fn get_average_rgba(
@@ -54,9 +68,12 @@ fn get_average_rgba(
     x: u32,
     y: u32,
     pixel_size: u32,
-) -> Result<(u32, u32, u32, u32), ImageProcessingError> {
+) -> Result<(u8, u8, u8, u8), ImageProcessingError> {
     if x + pixel_size > image.width() || y + pixel_size > image.height() {
-        return Err(ImageProcessingError::failed("Rgba Average", "Indexing would cause out of bounds error logic"))
+        return Err(ImageProcessingError::failed(
+            "Rgba Average",
+            "Indexing would cause out of bounds error logic",
+        ));
     }
 
     let mut red_sum: u32 = 0;
@@ -78,10 +95,10 @@ fn get_average_rgba(
     }
 
     Ok((
-        red_sum / pixel_count,
-        green_sum / pixel_count,
-        blue_sum / pixel_count,
-        alpha_sum / pixel_count,
+        (red_sum / pixel_count) as u8,
+        (green_sum / pixel_count) as u8,
+        (blue_sum / pixel_count) as u8,
+        (alpha_sum / pixel_count) as u8,
     ))
 }
 
