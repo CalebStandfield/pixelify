@@ -13,23 +13,27 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Command::PixelifyDownscale {
+        Command::PixelifyDownscaleByPixel {
             input,
             output,
             pixel_size,
         } => {
-            // This does not pixelify an image as of now.
-            // Just a simple copy function until pixelify is implemented.
             run_op(&input, &output, |b| pixelify_downscale_by_pixel_size(b, pixel_size))
         }
-        Command::PixelifyFalseDownscale {
+        Command::PixelifyFalseDownscaleByPixel {
             input,
             output,
             pixel_size,
         } => {
-            // This does not pixelify an image as of now.
-            // Just a simple copy function until pixelify is implemented.
             run_op(&input, &output, |b| pixelify_false_downscale_by_pixel_size(b, pixel_size))
+        }
+        Command::PixelifyDownscaleBySize {
+            input,
+            output,
+            width,
+            height,
+        } => {
+            run_op(&input, &output, |b| pixelify_by_image_size(b, width, height))
         }
         Command::ClearOutputs => {
             if let Err(e) = clear_outputs() {
@@ -64,17 +68,25 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    PixelifyDownscale {
+    PixelifyDownscaleByPixel {
         input: String,
         output: String,
         #[arg(long)]
         pixel_size: u32,
     },
-    PixelifyFalseDownscale {
+    PixelifyFalseDownscaleByPixel {
         input: String,
         output: String,
         #[arg(long)]
         pixel_size: u32,
+    },
+    PixelifyDownscaleBySize {
+        input: String,
+        output: String,
+        #[arg(long)]
+        width: u32,
+        #[arg(long)]
+        height: u32,
     },
     Grayscale {
         input: String,

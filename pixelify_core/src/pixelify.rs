@@ -169,7 +169,60 @@ fn get_average_rgba(
     ))
 }
 
-pub fn pixelify_by_image_size(bytes: &[u8], width: u32, height: u32) {
-    // Clone bytes since we can't modify them
-    // Nor should we since this should be non-destructive
+pub fn pixelify_by_image_size(bytes: &[u8], new_width: u32, new_height: u32) -> Result<Vec<u8>, ImageProcessingError> {
+    if new_width == 0 || new_height == 0 {
+        return Err(ImageProcessingError::failed(
+            "pixelify_by_image_size",
+            "Width and height must be non-zero",
+        ));
+    }
+
+    let image = image::load_from_memory(&bytes).map_err(|_| {
+        ImageProcessingError::failed("pixelify_by_image_size", "Failed to decode PNG")
+    })?;
+
+    let image = image.to_rgba8();
+
+    let (original_width, original_height) = image.dimensions();
+
+    if new_width > original_width || new_height > original_height {
+        return Err(ImageProcessingError::failed(
+            "pixelify_by_image_size",
+            "desired width and/or height is greater than original_width and original_height",
+        ));
+    }
+    
+    // This would give a rectangular box
+    let pixel_size_x = original_width / new_width;
+    let pixel_size_y = original_height / new_height;
+    
+    let pixel_size = pixel_size_x.min(pixel_size_y);
+
+    let mut downscaled = vec![0u8; (new_width * new_height * 4) as usize];
+
+    // Take the average color and map that to the downscaled image
+    for by in 0..new_height {
+        for bx in 0..new_width {
+            let x = bx * pixel_size;
+            let y = by * pixel_size;
+
+            let (r, g, b, a) = get_average_rgba(&image, x, y, pixel_size)?;
+
+            let out_i = ((by * new_width + bx) * 4) as usize;
+            downscaled[out_i] = r;
+            downscaled[out_i + 1] = g;
+            downscaled[out_i + 2] = b;
+            downscaled[out_i + 3] = a;
+        }
+    }
+
+    let rgba = RgbaImage::from_raw(new_width, new_height, downscaled)
+        .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
+
+    let mut cursor = std::io::Cursor::new(Vec::new());
+
+    rgba.write_to(&mut cursor, image::ImageFormat::Png)
+        .map_err(|_| ImageProcessingError::failed("crop", "Failed to encode PNG"))?;
+
+    Ok(cursor.into_inner())
 }
