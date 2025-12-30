@@ -13,21 +13,21 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Command::PixelifyDownscaleByPixel {
+        Command::PixelifyDownscaleByPixelSize {
             input,
             output,
             pixel_size,
         } => {
             run_op(&input, &output, |b| pixelify_downscale_by_pixel_size(b, pixel_size))
         }
-        Command::PixelifyFalseDownscaleByPixel {
+        Command::PixelifyFalseDownscaleByPixelSize {
             input,
             output,
             pixel_size,
         } => {
             run_op(&input, &output, |b| pixelify_false_downscale_by_pixel_size(b, pixel_size))
         }
-        Command::PixelifyDownscaleBySize {
+        Command::PixelifyDownscaleByImageSize {
             input,
             output,
             width,
@@ -68,19 +68,19 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    PixelifyDownscaleByPixel {
+    PixelifyDownscaleByPixelSize {
         input: String,
         output: String,
         #[arg(long)]
         pixel_size: u32,
     },
-    PixelifyFalseDownscaleByPixel {
+    PixelifyFalseDownscaleByPixelSize {
         input: String,
         output: String,
         #[arg(long)]
         pixel_size: u32,
     },
-    PixelifyDownscaleBySize {
+    PixelifyDownscaleByImageSize {
         input: String,
         output: String,
         #[arg(long)]
