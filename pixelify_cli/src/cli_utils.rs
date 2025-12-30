@@ -81,6 +81,28 @@ where
     fs::write(output, png_bytes.as_bytes()).expect("failed to write output");
 }
 
+/// Encodes a `PixelifyImage` (raw RGBA pixels) into PNG file bytes.
+///
+/// This function treats `pixelify_image.as_bytes()` as a **raw RGBA buffer**
+/// (4 bytes per pixel, row-major order) and encodes it into the **PNG file
+/// format**. The returned `PixelifyImage` contains **PNG-encoded bytes**, not
+/// raw pixel bytes.
+///
+/// The dimensions are preserved (`width`/`height` are copied over).
+///
+/// # Errors
+///
+/// Returns `Err(ImageProcessingError)` if:
+/// - the input buffer length does not match `width * height * 4` (invalid RGBA buffer),
+/// - PNG encoding fails.
+///
+/// # Notes
+///
+/// - This does **not** modify the original image in-place; it creates a new
+///   byte buffer containing a PNG file (headers + compressed image data).
+/// - After calling this, `PixelifyImage::as_bytes()` is **not** raw pixels
+///   anymore, so only use this at the “output boundary” (save/send/download)
+///   unless your type explicitly tracks the encoding.
 fn write_to_png_format(
     pixelify_image: PixelifyImage
 ) -> Result<PixelifyImage, ImageProcessingError> {
