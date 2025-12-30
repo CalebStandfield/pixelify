@@ -1,5 +1,6 @@
 use crate::pixelify_errors::ImageProcessingError;
 use image::GenericImageView;
+use crate::PixelifyImage;
 
 /// Crops a rectangular portion of an image.
 ///
@@ -23,7 +24,7 @@ pub fn crop_png(
     y: u32,
     width: u32,
     height: u32,
-) -> Result<Vec<u8>, ImageProcessingError> {
+) -> Result<PixelifyImage, ImageProcessingError> {
     let image = image::load_from_memory(bytes)
         .map_err(|_| ImageProcessingError::failed("crop", "Failed to decode input image"))?;
 
@@ -52,6 +53,6 @@ pub fn crop_png(
     cropped
         .write_to(&mut cursor, image::ImageFormat::Png)
         .map_err(|_| ImageProcessingError::failed("crop", "Failed to encode PNG"))?;
-
-    Ok(cursor.into_inner())
+    
+    Ok(PixelifyImage::new(cursor.into_inner(), width, height))
 }

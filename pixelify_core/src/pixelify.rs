@@ -11,11 +11,12 @@
 
 use crate::pixelify_errors::ImageProcessingError;
 use image::RgbaImage;
+use crate::PixelifyImage;
 
 pub fn pixelify_downscale_by_pixel_size(
     bytes: &[u8],
     pixel_size: u32,
-) -> Result<Vec<u8>, ImageProcessingError> {
+) -> Result<PixelifyImage, ImageProcessingError> {
     if pixel_size == 0 {
         return Err(ImageProcessingError::failed(
             "pixelify_downscale_by_pixel_size",
@@ -61,14 +62,14 @@ pub fn pixelify_downscale_by_pixel_size(
             downscaled[out_i + 3] = a;
         }
     }
-
-    write_to_png_format(new_width, new_height, downscaled)
+    
+    Ok(PixelifyImage::new(downscaled, new_width, new_height))
 }
 
 pub fn pixelify_false_downscale_by_pixel_size(
     bytes: &[u8],
     pixel_size: u32,
-) -> Result<Vec<u8>, ImageProcessingError> {
+) -> Result<PixelifyImage, ImageProcessingError> {
     if pixel_size == 0 {
         return Err(ImageProcessingError::failed(
             "pixelify_downscale_by_pixel_size",
@@ -110,8 +111,8 @@ pub fn pixelify_false_downscale_by_pixel_size(
             }
         }
     }
-
-    write_to_png_format(width, height, false_downscaled)
+    
+    Ok(PixelifyImage::new(false_downscaled, width, height))
 }
 
 fn get_average_rgba(
@@ -157,7 +158,7 @@ pub fn pixelify_by_image_size(
     bytes: &[u8],
     new_width: u32,
     new_height: u32,
-) -> Result<Vec<u8>, ImageProcessingError> {
+) -> Result<PixelifyImage, ImageProcessingError> {
     if new_width == 0 || new_height == 0 {
         return Err(ImageProcessingError::failed(
             "pixelify_by_image_size",
@@ -203,22 +204,6 @@ pub fn pixelify_by_image_size(
             downscaled[out_i + 3] = a;
         }
     }
-
-    write_to_png_format(new_width, new_height, downscaled)
-}
-
-fn write_to_png_format(
-    width: u32,
-    height: u32,
-    bytes: Vec<u8>
-) -> Result<Vec<u8>, ImageProcessingError> {
-    let rgba = RgbaImage::from_raw(width, height, bytes)
-        .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
-
-    let mut cursor = std::io::Cursor::new(Vec::new());
-
-    rgba.write_to(&mut cursor, image::ImageFormat::Png)
-        .map_err(|_| ImageProcessingError::failed("crop", "Failed to encode PNG"))?;
-
-    Ok(cursor.into_inner())
+    
+    Ok(PixelifyImage::new(downscaled, new_width, new_height))
 }
