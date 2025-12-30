@@ -2,6 +2,9 @@
 
 use std::path::Path;
 use std::{fs, io};
+use image::RgbaImage;
+use pixelify_core::pixelify_errors::ImageProcessingError;
+use pixelify_core::PixelifyImage;
 
 /// Clears the `outputs/` directory's contents.
 ///
@@ -55,16 +58,62 @@ pub fn clear_outputs() -> io::Result<()> {
 /// - Panics if the output file cannot be written
 pub fn run_op<F, E>(input: &str, output: &str, op: F)
 where
-    F: FnOnce(&[u8]) -> Result<Vec<u8>, E>,
+    F: FnOnce(&[u8]) -> Result<PixelifyImage, E>,
     E: std::fmt::Display,
 {
     let bytes = fs::read(input).expect("failed to read input");
-    let out_png = match op(&bytes) {
+    let image = match op(&bytes) {
         Ok(v) => v,
         Err(e) => {
             eprintln!("operation failed: {e}");
             std::process::exit(1);
         }
     };
-    fs::write(output, out_png).expect("failed to write output");
+
+    let png_bytes = match write_to_png_format(image) {
+        Ok(png_bytes) => png_bytes,
+        Err(e) => {
+            eprintln!("operation failed: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    fs::write(output, png_bytes.as_bytes()).expect("failed to write output");
+}
+
+/// Encodes a `PixelifyImage` (raw RGBA pixels) into PNG file bytes.
+///
+/// This function treats `pixelify_image.as_bytes()` as a **raw RGBA buffer**
+/// (4 bytes per pixel, row-major order) and encodes it into the **PNG file
+/// format**. The returned `PixelifyImage` contains **PNG-encoded bytes**, not
+/// raw pixel bytes.
+///
+/// The dimensions are preserved (`width`/`height` are copied over).
+///
+/// # Errors
+///
+/// Returns `Err(ImageProcessingError)` if:
+/// - the input buffer length does not match `width * height * 4` (invalid RGBA buffer),
+/// - PNG encoding fails.
+///
+/// # Notes
+///
+/// - This does **not** modify the original image in-place; it creates a new
+///   byte buffer containing a PNG file (headers + compressed image data).
+/// - After calling this, `PixelifyImage::as_bytes()` is **not** raw pixels
+///   anymore, so only use this at the “output boundary” (save/send/download)
+///   unless your type explicitly tracks the encoding.
+fn write_to_png_format(
+    pixelify_image: PixelifyImage
+) -> Result<PixelifyImage, ImageProcessingError> {
+    let rgba = RgbaImage::from_raw(pixelify_image.get_width(), pixelify_image.get_height(), pixelify_image.as_bytes().to_vec())
+        .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
+
+    let mut cursor = std::io::Cursor::new(Vec::new());
+
+    rgba.write_to(&mut cursor, image::ImageFormat::Png)
+        .map_err(|_| ImageProcessingError::failed("crop", "Failed to encode PNG"))?;
+
+
+    Ok(PixelifyImage::new(cursor.into_inner(), pixelify_image.get_width(), pixelify_image.get_height()))
 }

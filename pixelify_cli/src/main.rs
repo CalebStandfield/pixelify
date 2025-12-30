@@ -5,8 +5,7 @@
 use clap::{Parser, Subcommand};
 use pixelify_core::crop::crop_png;
 use pixelify_core::grayscale::grayscale_png;
-use pixelify_core::pixelify_image;
-use std::fs;
+use pixelify_core::pixelify::*;
 mod cli_utils;
 use cli_utils::*;
 
@@ -14,19 +13,28 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Command::Pixelify {
+        Command::PixelifyDownscaleByPixelSize {
+            input,
+            output,
+            pixel_size,
+        } => {
+            run_op(&input, &output, |b| pixelify_downscale_by_pixel_size(b, pixel_size))
+        }
+        Command::PixelifyFalseDownscaleByPixelSize {
+            input,
+            output,
+            pixel_size,
+        } => {
+            run_op(&input, &output, |b| pixelify_false_downscale_by_pixel_size(b, pixel_size))
+        }
+        Command::PixelifyDownscaleByImageSize {
             input,
             output,
             width,
             height,
         } => {
-            // This does not pixelify an image as of now.
-            // Just a simple copy function until pixelify is implemented.
-            let bytes = fs::read(&input).expect("failed to read input");
-            let out_png = pixelify_image::PixelifyImage::new(bytes, width, height);
-            fs::write(&output, out_png.as_bytes()).expect("failed to write output");
+            run_op(&input, &output, |b| pixelify_by_image_size(b, width, height))
         }
-
         Command::ClearOutputs => {
             if let Err(e) = clear_outputs() {
                 eprintln!("{e}");
@@ -60,7 +68,19 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    Pixelify {
+    PixelifyDownscaleByPixelSize {
+        input: String,
+        output: String,
+        #[arg(long)]
+        pixel_size: u32,
+    },
+    PixelifyFalseDownscaleByPixelSize {
+        input: String,
+        output: String,
+        #[arg(long)]
+        pixel_size: u32,
+    },
+    PixelifyDownscaleByImageSize {
         input: String,
         output: String,
         #[arg(long)]
