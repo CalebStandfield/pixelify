@@ -111,11 +111,11 @@ enum Command {
     },
     #[command(
         visible_alias = "convert",
-        visible_alias = "into_png",
         visible_alias = "ConvertToPng",
         visible_alias = "convert_to_png",
+        visible_alias = "into_png"
     )]
-    ConvertToPng {
+    IntoPng {
         input: String,
         output: String,
     },
