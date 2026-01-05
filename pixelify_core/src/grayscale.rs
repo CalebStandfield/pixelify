@@ -1,6 +1,6 @@
-use image::GenericImageView;
-use crate::pixelify_errors::ImageProcessingError;
 use crate::PixelifyImage;
+use crate::pixelify_errors::ImageProcessingError;
+use image::GenericImageView;
 
 /// Converts image into a grayscale format.
 ///
@@ -16,7 +16,7 @@ use crate::PixelifyImage;
 pub fn grayscale_png(bytes: &[u8]) -> Result<PixelifyImage, ImageProcessingError> {
     let image = image::load_from_memory(bytes)
         .map_err(|_| ImageProcessingError::failed("grayscale", "Failed to decode input image"))?;
-    
+
     let (width, height) = image.dimensions();
 
     let luma = image.to_luma8();

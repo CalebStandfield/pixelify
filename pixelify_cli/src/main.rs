@@ -13,28 +13,28 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Command::PixelifyDownscaleByPixelSize {
+        Command::DownscaleByPixelSize {
             input,
             output,
             pixel_size,
-        } => {
-            run_op(&input, &output, |b| pixelify_downscale_by_pixel_size(b, pixel_size))
-        }
-        Command::PixelifyFalseDownscaleByPixelSize {
+        } => run_op(&input, &output, |b| {
+            pixelify_downscale_by_pixel_size(b, pixel_size)
+        }),
+        Command::FalseDownscaleByPixelSize {
             input,
             output,
             pixel_size,
-        } => {
-            run_op(&input, &output, |b| pixelify_false_downscale_by_pixel_size(b, pixel_size))
-        }
-        Command::PixelifyDownscaleByImageSize {
+        } => run_op(&input, &output, |b| {
+            pixelify_false_downscale_by_pixel_size(b, pixel_size)
+        }),
+        Command::DownscaleByImageSize {
             input,
             output,
             width,
             height,
-        } => {
-            run_op(&input, &output, |b| pixelify_by_image_size(b, width, height))
-        }
+        } => run_op(&input, &output, |b| {
+            pixelify_by_image_size(b, width, height)
+        }),
         Command::ClearOutputs => {
             if let Err(e) = clear_outputs() {
                 eprintln!("{e}");
@@ -56,6 +56,11 @@ fn main() {
         } => {
             run_op(&input, &output, |b| crop_png(b, x, y, w, h));
         }
+        _ => {
+            // So the match statement doesn't get angry when adding in new enums
+            // without adding in their arm into the match statement immediately
+            eprintln!("Unsupported or command not found");
+        }
     }
 }
 
@@ -68,19 +73,19 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    PixelifyDownscaleByPixelSize {
+    DownscaleByPixelSize {
         input: String,
         output: String,
         #[arg(long)]
         pixel_size: u32,
     },
-    PixelifyFalseDownscaleByPixelSize {
+    FalseDownscaleByPixelSize {
         input: String,
         output: String,
         #[arg(long)]
         pixel_size: u32,
     },
-    PixelifyDownscaleByImageSize {
+    DownscaleByImageSize {
         input: String,
         output: String,
         #[arg(long)]
@@ -103,6 +108,16 @@ enum Command {
         w: u32,
         #[arg(long)]
         h: u32,
+    },
+    #[command(
+        visible_alias = "convert",
+        visible_alias = "ConvertToPng",
+        visible_alias = "convert_to_png",
+        visible_alias = "into_png"
+    )]
+    IntoPng {
+        input: String,
+        output: String,
     },
     #[command(
         visible_alias = "clear_outputs",

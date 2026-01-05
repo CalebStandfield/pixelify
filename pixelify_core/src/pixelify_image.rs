@@ -27,4 +27,8 @@ impl PixelifyImage {
     pub fn get_height(&self) -> u32 {
         self.dimensions.height
     }
+
+    pub fn into_bytes(self) -> Vec<u8> {
+        self.pixels
+    }
 }
