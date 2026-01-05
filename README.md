@@ -12,15 +12,11 @@ Designed to be fast, portable, and game-dev-friendly.
 
 ### Format Support Note
 
-When creating a simple grayscale feature, I ran into upstream bugs with decoding a jpg image into bytes, then into a
-grayscale format, and writing those back.
-The crate `Image` (while really powerful and amazing) has some limitations with decoding from one type then re-encoding
-to another type.
+Originally file types outside of `png` where just being operated on the bases of "best effort."
+I have gone back in and added an intermediate step of converting any other image type to `png` type
+and then applying pixelify operations on that image.
 
-So for now I will offer full support for PNG image types and then a working "best effort" for other types.
-
-Later I hope to revisit this issue and or side step it by just converting non png types into png types on the backend
-and go from there.
+Encoding is still only avaliable in `png` format only.
 
 ## Features
 
@@ -90,15 +86,14 @@ cargo build --target wasm32-unknown-unknown
 
 ## CLI Usage Examples
 
-cargo run -p pixelify_cli pixelify-downscale-by-pixel-size ./inputs/IMAGE_NAME.png ./outputs/IMAGE_NAME.png --pixel-size
+cargo run -p pixelify_cli ownscale-by-pixel-size ./inputs/IMAGE_NAME.png ./outputs/IMAGE_NAME.png --pixel-size
 8
 
-cargo run -p pixelify_cli pixelify-false-downscale-by-pixel-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png
+cargo run -p pixelify_cli false-downscale-by-pixel-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png
 --pixel-size 12
 
-cargo run -p pixelify_cli pixelify-downscale-by-image-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png --width 144
+cargo run -p pixelify_cli downscale-by-image-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png --width 144
 --width 108
-
 
 ---
 
