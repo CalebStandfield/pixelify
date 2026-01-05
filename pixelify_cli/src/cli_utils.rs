@@ -1,11 +1,10 @@
 //! Utility file for pixelify_cli
 
+use image::{GenericImageView, ImageFormat, RgbaImage};
+use pixelify_core::PixelifyImage;
+use pixelify_core::pixelify_errors::ImageProcessingError;
 use std::path::Path;
 use std::{fs, io};
-use image::{ImageFormat, RgbaImage};
-use pixelify_core::pixelify_errors::ImageProcessingError;
-use pixelify_core::PixelifyImage;
-use pixelify_core::into_png::into_png;
 
 /// Clears the `outputs/` directory's contents.
 ///
@@ -119,16 +118,55 @@ where
 ///   anymore, so only use this at the “output boundary” (save/send/download)
 ///   unless your type explicitly tracks the encoding.
 fn write_to_png_format(
-    pixelify_image: PixelifyImage
+    pixelify_image: PixelifyImage,
 ) -> Result<PixelifyImage, ImageProcessingError> {
-    let rgba = RgbaImage::from_raw(pixelify_image.get_width(), pixelify_image.get_height(), pixelify_image.as_bytes().to_vec())
-        .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
+    let rgba = RgbaImage::from_raw(
+        pixelify_image.get_width(),
+        pixelify_image.get_height(),
+        pixelify_image.as_bytes().to_vec(),
+    )
+    .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
 
     let mut cursor = io::Cursor::new(Vec::new());
 
     rgba.write_to(&mut cursor, ImageFormat::Png)
         .map_err(|_| ImageProcessingError::failed("crop", "Failed to encode PNG"))?;
 
+    Ok(PixelifyImage::new(
+        cursor.into_inner(),
+        pixelify_image.get_width(),
+        pixelify_image.get_height(),
+    ))
+}
 
-    Ok(PixelifyImage::new(cursor.into_inner(), pixelify_image.get_width(), pixelify_image.get_height()))
+/// Decodes an image from memory (auto-detecting its format) and re-encodes it as PNG.
+///
+/// This function accepts image file bytes in any format supported by the `image` crate
+/// (e.g., PNG, JPEG, GIF, WebP, etc.), decodes them into pixels, then encodes the result
+/// into **PNG file bytes**. The returned [`PixelifyImage`] contains **PNG-encoded bytes**
+/// (not raw RGBA pixels).
+///
+/// The returned `width` and `height` are taken from the decoded image.
+///
+/// # Errors
+///
+/// Returns `Err(ImageProcessingError)` if:
+/// - the input bytes cannot be decoded as a supported image format,
+/// - PNG encoding fails.
+///
+/// # Notes
+///
+/// - This is a **format conversion** step (file bytes → pixels → PNG file bytes).
+pub fn into_png(bytes: Vec<u8>) -> Result<PixelifyImage, ImageProcessingError> {
+    let image = image::load_from_memory(&bytes)
+        .map_err(|_| ImageProcessingError::failed("into_png", "Failed to decode input image"))?;
+
+    let (width, height) = image.dimensions();
+
+    let mut cursor = io::Cursor::new(Vec::new());
+    image
+        .write_to(&mut cursor, ImageFormat::Png)
+        .map_err(|_| ImageProcessingError::failed("into_png", "Failed to encode PNG"))?;
+
+    Ok(PixelifyImage::new(cursor.into_inner(), width, height))
 }

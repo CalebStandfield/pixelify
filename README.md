@@ -1,4 +1,4 @@
-# Pixelify  
+# Pixelify
 
 **In Development**
 
@@ -6,17 +6,21 @@ This README is both a traditional README and a road map of planned or features i
 
 Convert normal images into crisp pixel-art sprites using Rust + WASM + React.
 
-Pixelify takes any uploaded image, processes it through a Rust backend compiled to WebAssembly, and outputs a pixelated sprite with customizable resolution, palette, and dithering options.
+Pixelify takes any uploaded image, processes it through a Rust backend compiled to WebAssembly, and outputs a pixelated
+sprite with customizable resolution, palette, and dithering options.
 Designed to be fast, portable, and game-dev-friendly.
 
 ### Format Support Note
 
-When creating a simple grayscale feature, I ran into upstream bugs with decoding a jpg image into bytes, then into a grayscale format, and writing those back.
-The crate `Image` (while really powerful and amazing) has some limitations with decoding from one type then re-encoding to another type.
+When creating a simple grayscale feature, I ran into upstream bugs with decoding a jpg image into bytes, then into a
+grayscale format, and writing those back.
+The crate `Image` (while really powerful and amazing) has some limitations with decoding from one type then re-encoding
+to another type.
 
-So for now I will offer full support for PNG image types and then a working "best effort" for other types. 
+So for now I will offer full support for PNG image types and then a working "best effort" for other types.
 
-Later I hope to revisit this issue and or side step it by just converting non png types into png types on the backend and go from there.
+Later I hope to revisit this issue and or side step it by just converting non png types into png types on the backend
+and go from there.
 
 ## Features
 
@@ -50,8 +54,9 @@ Later I hope to revisit this issue and or side step it by just converting non pn
 ## Running in Docker (I Recommend this way since there are a lot of moving parts)
 
 Prerequisites:
-- Docker Desktop installed  
-- This repo cloned locally  
+
+- Docker Desktop installed
+- This repo cloned locally
 
 Start the dev environment:
 
@@ -85,12 +90,14 @@ cargo build --target wasm32-unknown-unknown
 
 ## CLI Usage Examples
 
+cargo run -p pixelify_cli pixelify-downscale-by-pixel-size ./inputs/IMAGE_NAME.png ./outputs/IMAGE_NAME.png --pixel-size
+8
 
-cargo run -p pixelify_cli pixelify-downscale-by-pixel-size ./inputs/IMAGE_NAME.png ./outputs/IMAGE_NAME.png --pixel-size 8
+cargo run -p pixelify_cli pixelify-false-downscale-by-pixel-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png
+--pixel-size 12
 
-cargo run -p pixelify_cli pixelify-false-downscale-by-pixel-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png --pixel-size 12
-
-cargo run -p pixelify_cli pixelify-downscale-by-image-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png --width 144 --width 108
+cargo run -p pixelify_cli pixelify-downscale-by-image-size ./inputs/IMAGME_NAME.png ./outputs/IMAGE_NAME.png --width 144
+--width 108
 
 
 ---
@@ -100,17 +107,20 @@ cargo run -p pixelify_cli pixelify-downscale-by-image-size ./inputs/IMAGME_NAME.
 ## Tech Stack
 
 **Backend / Core**
+
 - Rust
 - `image` crate
 - color quantization algorithms
 - WASM (`wasm32-unknown-unknown`)
 
 **Frontend**
+
 - React
 - TypeScript
 - Vite
 
 **Dev Environment**
+
 - Docker / docker-compose
 - Node + Rust inside container
 
@@ -126,5 +136,6 @@ cargo run -p pixelify_cli pixelify-downscale-by-image-size ./inputs/IMAGME_NAME.
 - [ ] Add animation previewer
 - [ ] Deploy to Vercel / Netlify
 
-This is in the early stages of development, so as I proceed through this project, items listed above are subject to modification, addition, or removal based on how I see fit.
+This is in the early stages of development, so as I proceed through this project, items listed above are subject to
+modification, addition, or removal based on how I see fit.
 If you have any cool ideas or features you'd like to see accessible/ available, then let me know!

@@ -17,24 +17,24 @@ fn main() {
             input,
             output,
             pixel_size,
-        } => {
-            run_op(&input, &output, |b| pixelify_downscale_by_pixel_size(b, pixel_size))
-        }
+        } => run_op(&input, &output, |b| {
+            pixelify_downscale_by_pixel_size(b, pixel_size)
+        }),
         Command::FalseDownscaleByPixelSize {
             input,
             output,
             pixel_size,
-        } => {
-            run_op(&input, &output, |b| pixelify_false_downscale_by_pixel_size(b, pixel_size))
-        }
+        } => run_op(&input, &output, |b| {
+            pixelify_false_downscale_by_pixel_size(b, pixel_size)
+        }),
         Command::DownscaleByImageSize {
             input,
             output,
             width,
             height,
-        } => {
-            run_op(&input, &output, |b| pixelify_by_image_size(b, width, height))
-        }
+        } => run_op(&input, &output, |b| {
+            pixelify_by_image_size(b, width, height)
+        }),
         Command::ClearOutputs => {
             if let Err(e) = clear_outputs() {
                 eprintln!("{e}");

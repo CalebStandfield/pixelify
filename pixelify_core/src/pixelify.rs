@@ -9,9 +9,9 @@
 //! Users should have the choice between setting the pixel size, ex, pixel_size = 8.
 //! Or they should be able to enter in their desired image size, ex, w = 128, h = 72, and then the backed determine pixel size from that.
 
+use crate::PixelifyImage;
 use crate::pixelify_errors::ImageProcessingError;
 use image::RgbaImage;
-use crate::PixelifyImage;
 
 pub fn pixelify_downscale_by_pixel_size(
     bytes: &[u8],
@@ -62,7 +62,7 @@ pub fn pixelify_downscale_by_pixel_size(
             downscaled[out_i + 3] = a;
         }
     }
-    
+
     Ok(PixelifyImage::new(downscaled, new_width, new_height))
 }
 
@@ -111,7 +111,7 @@ pub fn pixelify_false_downscale_by_pixel_size(
             }
         }
     }
-    
+
     Ok(PixelifyImage::new(false_downscaled, width, height))
 }
 
@@ -204,6 +204,6 @@ pub fn pixelify_by_image_size(
             downscaled[out_i + 3] = a;
         }
     }
-    
+
     Ok(PixelifyImage::new(downscaled, new_width, new_height))
 }
