@@ -2,9 +2,10 @@
 
 use std::path::Path;
 use std::{fs, io};
-use image::RgbaImage;
+use image::{ImageFormat, RgbaImage};
 use pixelify_core::pixelify_errors::ImageProcessingError;
 use pixelify_core::PixelifyImage;
+use pixelify_core::into_png::into_png;
 
 /// Clears the `outputs/` directory's contents.
 ///
@@ -61,9 +62,23 @@ where
     F: FnOnce(&[u8]) -> Result<PixelifyImage, E>,
     E: std::fmt::Display,
 {
-    let bytes = fs::read(input).expect("failed to read input");
+    let mut bytes = fs::read(input).expect("failed to read input");
+
+    // Check if the image type is a png
+    // If not, then convert and then run operation
+    let format = image::guess_format(&bytes).unwrap_or_else(|e| {
+        eprintln!("Format guess failed {}", e);
+        // if the guess fails, default to png
+        ImageFormat::Png
+    });
+
+    // If the bytes are not of type png, convert them into a png format
+    if format != ImageFormat::Png {
+        bytes = into_png(bytes).expect("").into_bytes();
+    }
+
     let image = match op(&bytes) {
-        Ok(v) => v,
+        Ok(image) => image,
         Err(e) => {
             eprintln!("operation failed: {e}");
             std::process::exit(1);
@@ -109,9 +124,9 @@ fn write_to_png_format(
     let rgba = RgbaImage::from_raw(pixelify_image.get_width(), pixelify_image.get_height(), pixelify_image.as_bytes().to_vec())
         .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
 
-    let mut cursor = std::io::Cursor::new(Vec::new());
+    let mut cursor = io::Cursor::new(Vec::new());
 
-    rgba.write_to(&mut cursor, image::ImageFormat::Png)
+    rgba.write_to(&mut cursor, ImageFormat::Png)
         .map_err(|_| ImageProcessingError::failed("crop", "Failed to encode PNG"))?;
 
 
