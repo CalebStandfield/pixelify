@@ -120,10 +120,14 @@ where
 fn write_to_png_format(
     pixelify_image: PixelifyImage,
 ) -> Result<PixelifyImage, ImageProcessingError> {
+
+    let width = pixelify_image.get_width();
+    let height = pixelify_image.get_height();
+    
     let rgba = RgbaImage::from_raw(
-        pixelify_image.get_width(),
-        pixelify_image.get_height(),
-        pixelify_image.as_bytes().to_vec(),
+        width,
+        height,
+        pixelify_image.into_bytes(),
     )
     .ok_or_else(|| ImageProcessingError::failed("pixelify", "Bad buffer length"))?;
 
@@ -134,8 +138,8 @@ fn write_to_png_format(
 
     Ok(PixelifyImage::new(
         cursor.into_inner(),
-        pixelify_image.get_width(),
-        pixelify_image.get_height(),
+        width,
+        height,
     ))
 }
 
